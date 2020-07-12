@@ -1,0 +1,82 @@
+---
+title: "Thesis - Master dataset"
+author: "Ronan Duchemin"
+date: "2019 M06 5"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## getting the required packages installed
+
+```{r Install Packages}
+library(data.table)
+```
+
+## Getting the data
+
+```{r Data}
+# load the data
+dfChurn <- read.csv(("churn.csv"), 
+                    row.names = 1, 
+                    stringsAsFactors = FALSE)
+
+# check for missing values
+NAs <- as.data.frame( colSums(is.na(dfChurn)))
+NAs
+# changing 'zero' and 'one' for "college" to 0 and 1
+# see if needed - use this code as insperation
+#credit.data$purpose[credit.data$purpose == 'car0'] <- 'car'
+#credit.data$purpose <- droplevels(credit.data$purpose,
+#                       exclude = if(anyNA(levels(credit.data))) NULL else NA)
+
+# Creating the training and the test set
+set.seed(1337) # setting seed for reproducability of results
+trainSample <- sample.int(n = nrow(dfChurn),
+               size = floor(0.8 * nrow(dfChurn)),
+               replace = FALSE)
+
+# Training data with 80% of the examples
+dfChurn.train <- dfChurn[trainSample, ]
+dfChurn.test  <- dfChurn[-trainSample, ]
+
+```
+```{r Scaling}
+# Rename the original dataset so I wont overwrite
+dfChurn.train.scaled <- dfChurn.train
+dfChurn.test.scaled  <- dfChurn.test
+
+# Changing 'zero' and 'one' for "college" to 0 and 1
+# for the training data
+dfChurn.train.scaled$college[dfChurn.train.scaled$college == "zero"] <- 0
+dfChurn.train.scaled$college[dfChurn.train.scaled$college == "one"]  <- 1
+
+# and for the test data
+dfChurn.test.scaled$college[dfChurn.test.scaled$college == "zero"] <- 0
+dfChurn.test.scaled$college[dfChurn.test.scaled$college == "one"]  <- 1
+
+# see if needed - use this code as insperation
+#credit.data$purpose[credit.data$purpose == 'car0'] <- 'car'
+#credit.data$purpose <- droplevels(credit.data$purpose,
+#                       exclude = if(anyNA(levels(credit.data))) NULL else NA)
+
+# set seed to assure reproducability
+set.seed(1337)
+# Scale the numeric variables so the logit and neural network can work with them
+dfChurn.train.scaled[, c(2:8)] <- scale(dfChurn.train.scaled[, c(2:8)])
+dfChurn.test.scaled[, c(2:8)] <- scale(dfChurn.test.scaled[, c(2:8)])
+
+```
+
+
+```{r Export}
+# writing the CSV documents on my computer
+write.csv(dfChurn.test, file = 'masterdata/ChurnTest.csv')
+write.csv(dfChurn.train, file = 'masterdata/ChurnTrain.csv')
+write.csv(dfChurn.test.scaled, file = 'masterdata/ChurnTestScaled.csv')
+write.csv(dfChurn.train.scaled, file = 'masterdata/ChurnTrainScaled.csv')
+
+```
+
